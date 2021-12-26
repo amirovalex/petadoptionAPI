@@ -1,15 +1,15 @@
-const { getUserByEmail } = require('../data/users');
+const userService = require("../data/users.js");
 
-async function doesUserExistLogin (req, res, next) {
+async function doesUserExistLogin(req, res, next) {
   const { email } = req.body;
-  const user = await getUserByEmail(email);
+  const db = userService.getUserServiceInstance();
+  const user = await db.getUserByEmail(email);
   if (!user) {
-    res.status(400).send('User with this email does not exist');
+    res.status(400).send("User with this email does not exist");
     return;
   }
   req.body.user = user;
   next();
-};
+}
 
-
-module.exports = {doesUserExistLogin}
+module.exports = { doesUserExistLogin };

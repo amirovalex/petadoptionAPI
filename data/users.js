@@ -1,7 +1,8 @@
 const { query } = require("../lib/db");
 const { v4: uuidv4 } = require("uuid");
 const instance = null;
-
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 class userService {
   static getUserServiceInstance() {
     console.log("userService instance", instance);
@@ -12,8 +13,17 @@ class userService {
     try {
       const sql = "SELECT * FROM users";
       const users = await query(sql);
-      console.log("console", users, "console");
       return users;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  getUserByEmail = async (email) => {
+    try {
+      const sql = `SELECT * FROM users WHERE email='${email}'`;
+      const rows = await query(sql);
+      return rows[0];
     } catch (err) {
       console.log(err);
     }
@@ -22,9 +32,7 @@ class userService {
   getUserById = async (id) => {
     try {
       const sql = `SELECT * FROM users WHERE id = '${id}'`;
-      console.log("my query", sql);
       const user = await query(sql);
-      console.log("console", user, "console");
       return user[0];
     } catch (err) {
       console.log(err);
@@ -33,15 +41,22 @@ class userService {
 
   //CONTINUE HERE
 
-  updateUser = async (id, password, email, firstName, lastName, phone, bio) => {
+  updateUser = async (
+    id,
+    hashPassword,
+    email,
+    firstName,
+    lastName,
+    phone,
+    bio
+  ) => {
     try {
-      const bcryptPassword = await bcrypt.hash(password, saltRounds);
       const updateId = await new Promise((res, rej) => {
         const query =
           `UPDATE users SET ` +
           `${
             password
-              ? `password = '${bcryptPassword}' ${
+              ? `password = '${hashPassword}' ${
                   email || firstName || lastName || phone || bio ? "," : ""
                 }`
               : ""
@@ -74,7 +89,6 @@ class userService {
           res(result);
         });
       });
-      console.log("console", updateId, "console");
       return updateId;
     } catch (err) {
       console.log(err);
@@ -83,13 +97,10 @@ class userService {
 
   loginUser = async (email, password) => {
     try {
-      const bcryptPassword = await bcrypt.hash("thetoken", saltRounds);
-      console.log("toke", bcryptPassword);
       const sql = `SELECT * FROM users WHERE email = '${email.toLowerCase()}'`;
       const user = await query(sql);
       const dbPass = user[0].password;
       const isPasswordValid = await bcrypt.compare(password, dbPass);
-
       if (isPasswordValid) return user;
       return "password not valid";
     } catch (err) {
@@ -97,39 +108,29 @@ class userService {
     }
   };
 
-  addUser = async (email, password, firstName, lastName, phone) => {
+  addUser = async (
+    email,
+    hashPassword,
+    firstName,
+    lastName,
+    phone,
+    createdDate,
+    admin
+  ) => {
     try {
-      const bcryptPassword = await bcrypt.hash(password, saltRounds);
       const userId = uuidv4();
-      const insertId = await new Promise((res, rej) => {
-        const query = `INSERT INTO users(id,email,password,firstName,lastName,phone) VALUES (?,?,?,?,?,?);`;
-        console.log(query);
-        connection.query(
-          query,
-          [
-            userId,
-            email.toLowerCase(),
-            bcryptPassword,
-            firstName,
-            lastName,
-            phone,
-          ],
-          (err, result) => {
-            if (err) {
-              console.log(err);
-              rej(new Error(err.message));
-            }
-
-            res(result);
-          }
-        );
-      });
-      console.log("console", insertId, "console");
-      return {
+      const sql = `INSERT INTO users(id,email,password,firstName,lastName,phone,createdDate,admin) VALUES (?,?,?,?,?,?,?,?);`;
+      const addedUser = await query(sql, [
         userId,
-        bcryptPassword,
-        email: email.toLowerCase(),
-      };
+        email.toLowerCase(),
+        hashPassword,
+        firstName,
+        lastName,
+        phone,
+        createdDate,
+        admin,
+      ]);
+      return { ...addedUser, id: userId };
     } catch (err) {
       console.log(err);
     }

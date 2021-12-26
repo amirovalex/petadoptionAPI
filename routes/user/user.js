@@ -3,17 +3,28 @@ const userService = require("../../data/users.js");
 const jwt = require("jsonwebtoken");
 let router = express.Router();
 const dotenv = require("dotenv");
-const auth = require("../../middleware/auth");
+const auth = require("../../middleware/auth.js");
+const { encryptPassword } = require("../../middleware/encryptPassword.js");
+const {
+  doesUserExistLogin,
+} = require("../../middleware/doesUserExistLogin.js");
+const {
+  doesUserExistSignup,
+} = require("../../middleware/doesUserExistSignup.js");
+const { doPasswordsMatch } = require("../../middleware/doPasswordsMatch.js");
+const { signUpSchema, loginSchema } = require("../../schemas/allSchemas");
+const { validateBody } = require("../../middleware/validateBody.js");
+const { isUserAdmin } = require("../../middleware/isUserAdmin.js");
+
 //Routes
 
 //GET ROUTES
 
 //GETS ALL USERS IN DB
-router.get("/", async (req, res) => {
+router.get("/", auth, isUserAdmin, async (req, res) => {
   try {
     const db = userService.getUserServiceInstance();
     const result = await db.getAllUsers();
-    console.log(result);
     res.send({ data: result });
   } catch (err) {
     console.log(err);
@@ -36,78 +47,13 @@ router.get("/:id/full", auth, (req, res) => {
   res.send("SENDING FULL USER");
 });
 
-//POST ROUTES
-
-//SIGNUP USER
-router.post("/signup", async (req, res) => {
-  try {
-    const { email, password, firstName, lastName, phone } = req.body;
-
-    const db = userService.getUserServiceInstance();
-    const result = await db.addUser(
-      email,
-      password,
-      firstName,
-      lastName,
-      phone
-    );
-
-    const user = {
-      email,
-      firstName,
-      lastName,
-      phone,
-      id: result.userId,
-    };
-
-    const token = jwt.sign({ user }, process.env.USER_TOKEN, {
-      expiresIn: "2h",
-    });
-
-    user.token = token;
-
-    res.send(user);
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-//LOGIN USER
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    console.log("login!!!", process.env.USER_TOKEN);
-    const db = userService.getUserServiceInstance();
-    const result = await db.loginUser(email, password);
-
-    const user = {
-      id: result.id,
-      email: result.email,
-      firstName: result.firstName,
-      lastName: result.lastName,
-      phone: result.phone,
-      bio: result.bio,
-      admin: result.admin,
-    };
-    const token = jwt.sign(user, process.env.USER_TOKEN, {
-      expiresIn: "2h",
-    });
-
-    // save user token
-    user.token = token;
-    res.send(user);
-  } catch (err) {
-    console.log(err);
-  }
-});
-
 //PUT ROUTES
 
 //UPDATE USER
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, encryptPassword, async (req, res) => {
   try {
     const { id } = req.params;
-    const { password, email, firstName, lastName, phone, bio } = req.body;
+    const { hashPassword, email, firstName, lastName, phone, bio } = req.body;
 
     const db = userService.getUserServiceInstance();
     const result = await db.updateUser(
@@ -124,5 +70,84 @@ router.put("/:id", async (req, res) => {
     console.log(err);
   }
 });
+
+//POST ROUTES
+
+//SIGNUP USER
+router.post(
+  "/signup",
+  validateBody(signUpSchema),
+  doesUserExistSignup,
+  doPasswordsMatch,
+  encryptPassword,
+  async (req, res) => {
+    try {
+      const { email, hashPassword, firstName, lastName, phone, admin } =
+        req.body;
+      const createdDate = new Date()
+        .toISOString()
+        .slice(0, 19)
+        .replace("T", " ");
+      const db = userService.getUserServiceInstance();
+      const result = await db.addUser(
+        email,
+        hashPassword,
+        firstName,
+        lastName,
+        phone,
+        createdDate,
+        admin
+      );
+      const user = {
+        email,
+        firstName,
+        lastName,
+        phone,
+        id: result.id,
+      };
+      const token = jwt.sign({ id: user.id }, process.env.USER_TOKEN, {
+        expiresIn: "2h",
+      });
+
+      user.token = token;
+
+      res.send({ token: user.token });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
+
+//LOGIN USER
+router.post(
+  "/login",
+  validateBody(loginSchema),
+  doesUserExistLogin,
+  async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const db = userService.getUserServiceInstance();
+      const result = await db.loginUser(email, password);
+      const user = {
+        id: result[0].id,
+        email: result[0].email,
+        firstName: result[0].firstName,
+        lastName: result[0].lastName,
+        phone: result[0].phone,
+        bio: result[0].bio,
+        admin: result[0].admin,
+      };
+      const token = jwt.sign({ id: user.id }, process.env.USER_TOKEN, {
+        expiresIn: "2h",
+      });
+
+      // save user token
+      user.token = token;
+      res.send({ token: user.token });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
 
 module.exports = router;

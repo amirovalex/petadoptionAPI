@@ -4,6 +4,7 @@ const petRoutes = require("./routes/pet/pet.js");
 const userRoutes = require("./routes/user/user.js");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const { postgrator } = require("./lib/db");
 
 dotenv.config();
 
@@ -16,6 +17,15 @@ app.use("/pet", petRoutes);
 app.use("/user", userRoutes);
 
 //Run application
-app.listen(port, () => {
-  console.log("listening on port " + port);
-});
+
+postgrator
+  .migrate()
+  .then((result) => {
+    console.log(`migrated db successfully:`, result);
+    app.listen(process.env.PORT, () => {
+      console.log(
+        `server is listening at http://localhost:${process.env.PORT}`
+      );
+    });
+  })
+  .catch((error) => console.error(error));

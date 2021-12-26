@@ -1,7 +1,10 @@
 let express = require("express");
 let router = express.Router();
 const petsService = require("../../data/pets");
-
+const auth = require("../../middleware/auth.js");
+const { isUserAdmin } = require("../../middleware/isUserAdmin.js");
+const { validateBody } = require("../../middleware/validateBody.js");
+const { addPetSchema } = require("../../schemas/allSchemas");
 //Routes
 
 //GET ROUTES
@@ -14,7 +17,6 @@ router.get("/", async (req, res) => {
     if (adoptionStatus === "null") {
       adoptionStatus = null;
     }
-    console.log("typeof", typeof adoptionStatus);
     const db = petsService.getPetsServiceInstance();
     const result = await db.getPetsByCriteria(
       adoptionStatus,
@@ -59,44 +61,50 @@ router.get("/user/:userId", async (req, res) => {
 //POST ROUTES
 
 //ADD PET TO DB
-router.post("/", async (req, res) => {
-  try {
-    const {
-      type,
-      name,
-      adoptionStatus,
-      picture,
-      weight,
-      height,
-      color,
-      bio,
-      hypoallergenic,
-      dietaryRestrictions,
-      breed,
-    } = req.body;
-    const db = petsService.getPetsServiceInstance();
-    const result = await db.addNewPet(
-      type,
-      name,
-      adoptionStatus,
-      picture,
-      weight,
-      height,
-      color,
-      bio,
-      hypoallergenic,
-      dietaryRestrictions,
-      breed
-    );
+router.post(
+  "/",
+  validateBody(addPetSchema),
+  auth,
+  isUserAdmin,
+  async (req, res) => {
+    try {
+      const {
+        type,
+        name,
+        adoptionStatus,
+        picture,
+        weight,
+        height,
+        color,
+        bio,
+        hypoallergenic,
+        dietaryRestrictions,
+        breed,
+      } = req.body;
+      const db = petsService.getPetsServiceInstance();
+      const result = await db.addNewPet(
+        type,
+        name,
+        adoptionStatus,
+        picture,
+        weight,
+        height,
+        color,
+        bio,
+        hypoallergenic,
+        dietaryRestrictions,
+        breed
+      );
 
-    res.send(result);
-  } catch (err) {
-    console.log(err);
+      res.send(result);
+    } catch (err) {
+      console.log(err);
+    }
   }
-});
+);
 
 //ADOPT A PET
-router.post("/:id/adopt", async (req, res) => {
+router.post("/:id/adopt", auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { userId, adoptionType } = req.body;
@@ -113,7 +121,7 @@ router.post("/:id/adopt", async (req, res) => {
 });
 
 //RETURN A PET
-router.post("/:id/return", async (req, res) => {
+router.post("/:id/return", auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.body;
@@ -130,7 +138,7 @@ router.post("/:id/return", async (req, res) => {
 });
 
 //SAVE A PET
-router.post("/:id/save", async (req, res) => {
+router.post("/:id/save", auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.body;
@@ -149,7 +157,7 @@ router.post("/:id/save", async (req, res) => {
 //PUT ROUTES
 
 //EDIT PET IN DB BY ID
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, isUserAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -191,7 +199,7 @@ router.put("/:id", async (req, res) => {
 //DELETE ROUTES
 
 //DELETE SAVED PET
-router.delete("/:id/save", async (req, res) => {
+router.delete("/:id/save", auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.body;

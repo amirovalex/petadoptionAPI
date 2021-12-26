@@ -1,7 +1,6 @@
 const { query } = require("../lib/db");
 const { v4: uuidv4 } = require("uuid");
 const instance = null;
-
 class petsService {
   static getPetsServiceInstance() {
     console.log("petsService instance", instance);
@@ -9,7 +8,6 @@ class petsService {
   }
   getPetsByCriteria = async (adoptionStatus, type, height, weight, name) => {
     try {
-      console.log(adoptionStatus, type, height, weight, name);
       const sql = `SELECT * FROM pets WHERE 
           ${
             adoptionStatus
@@ -29,7 +27,6 @@ class petsService {
           ${weight ? `weight = ${weight}` : ""}
           `;
       const pets = await query(sql);
-      console.log("console", pets, "console");
       return pets;
     } catch (err) {
       console.log(err);
@@ -40,7 +37,6 @@ class petsService {
     try {
       const sql = `SELECT * FROM pets WHERE id = '${id}'`;
       const pet = await query(sql);
-      console.log("console", pet, "console");
       return pet;
     } catch (err) {
       console.log(err);
@@ -51,7 +47,6 @@ class petsService {
     try {
       const sql = `SELECT * FROM pets WHERE owner = '${userId}'`;
       const pets = await query(sql);
-      console.log("console", pets, "console");
       return pets;
     } catch (err) {
       console.log(err);
@@ -74,6 +69,10 @@ class petsService {
     try {
       const petId = uuidv4();
       const sql = `INSERT INTO pets(id,type,name,adoptionStatus,picture,weight,height,color,bio,hypoallergenic,dietaryRestrictions,breed) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`;
+      let checkAllergenic = hypoallergenic;
+      if (!checkAllergenic) {
+        checkAllergenic = 0;
+      }
       const pet = await query(sql, [
         petId,
         type,
@@ -84,11 +83,10 @@ class petsService {
         height,
         color,
         bio,
-        hypoallergenic,
+        checkAllergenic,
         dietaryRestrictions,
         breed,
       ]);
-      console.log("console", pet, "console");
       return pet;
     } catch (err) {
       console.log(err);
@@ -99,7 +97,6 @@ class petsService {
     try {
       const sql = `UPDATE pets SET owner = ? , adoptionStatus = ? WHERE id = ?`;
       const adoptedPet = await query(sql, [userId, adoptionType, id]);
-      console.log("console", pet, "console");
       return adoptedPet;
     } catch (err) {
       console.log(err);
@@ -111,7 +108,6 @@ class petsService {
     try {
       const sql = "INSERT INTO saved(petId,userId) VALUES (?,?)";
       const savedPet = await query(sql, [id, userId]);
-      console.log("console", savedPet, "console");
       return savedPet;
     } catch (err) {
       console.log(err);
@@ -121,10 +117,8 @@ class petsService {
   unsavePet = async (id) => {
     //need to make transaction to check if saved
     try {
-      console.log(id);
       const sql = "DELETE FROM saved WHERE id = ?";
       const unsavedPet = await query(sql, [id]);
-      console.log("console", unsavedPet, "console");
       return unsavedPet;
     } catch (err) {
       console.log(err);
@@ -135,7 +129,6 @@ class petsService {
     try {
       const sql = `UPDATE pets SET owner = NULL , adoptionStatus =  WHERE id = ?`;
       const returnedPet = await query(sql, [id]);
-      console.log("console", returnedPet, "console");
       return returnedPet;
     } catch (err) {
       console.log(err);
@@ -290,7 +283,6 @@ class petsService {
           res(result);
         });
       });
-      console.log("console", updateId, "console");
       return updateId;
     } catch (err) {
       console.log(err);

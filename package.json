@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "dev": "NODE_ENV=development nodemon index.js",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -18,12 +19,16 @@
   },
   "homepage": "https://github.com/israeltechchallenge/fs_pet_adoption_be-amirovalex#readme",
   "dependencies": {
+    "@nearform/sql": "^1.9.0",
+    "ajv": "^8.8.2",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "fluent-json-schema": "^3.0.1",
     "jsonwebtoken": "^8.5.1",
     "mysql": "^2.18.1",
+    "postgrator": "^4.1.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
