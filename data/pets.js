@@ -6,26 +6,85 @@ class petsService {
     console.log("petsService instance", instance);
     return instance ? instance : new petsService();
   }
-  getPetsByCriteria = async (adoptionStatus, type, height, weight, name) => {
+  getPetsByCriteria = async (
+    adoptionStatus,
+    type,
+    minHeight,
+    maxHeight,
+    minWeight,
+    maxWeight,
+    name
+  ) => {
     try {
-      const sql = `SELECT * FROM pets WHERE 
+      console.log(
+        "props",
+        adoptionStatus,
+        type,
+        minHeight,
+        maxHeight,
+        minWeight,
+        maxWeight,
+        name
+      );
+
+      const sql = `SELECT * FROM pets ${
+        adoptionStatus ||
+        type ||
+        minHeight ||
+        maxHeight ||
+        minWeight ||
+        maxWeight ||
+        name
+          ? `WHERE`
+          : ""
+      } 
           ${
             adoptionStatus
               ? `adoptionStatus = '${adoptionStatus}' 
-            ${type || height || weight || name ? "AND" : ""}`
-              : `adoptionStatus IS NULL ${
-                  type || height || weight || name ? "AND" : ""
-                }`
+            ${
+              type || minHeight || maxHeight || minWeight || maxWeight || name
+                ? "AND"
+                : ""
+            }`
+              : ``
           }
           ${
             type
-              ? `type = '${type}' ${height || weight || name ? "AND" : ""}`
+              ? `type = '${type}' ${
+                  minHeight || maxHeight || minWeight || maxWeight || name
+                    ? "AND"
+                    : ""
+                }`
               : ""
           }
-          ${height ? `height = ${height} ${weight || name ? "AND" : ""}` : ""}
-          ${name ? `name = '${name}' ${weight ? "AND" : ""}` : ""}
-          ${weight ? `weight = ${weight}` : ""}
+          ${
+            name
+              ? `name = '${name}' ${
+                  (minHeight, maxHeight, minWeight, maxWeight ? "AND" : "")
+                }`
+              : ""
+          }
+          ${
+            minHeight
+              ? `height >= ${minHeight}
+                 ${maxHeight || minWeight || maxWeight ? "AND" : ""}`
+              : ``
+          }
+          ${
+            maxHeight
+              ? `$height <= ${maxHeight}
+                 ${minWeight || maxWeight ? "AND" : ""}`
+              : ""
+          }
+          ${
+            minWeight
+              ? `weight >= ${minWeight}
+                 ${maxWeight ? "AND" : ""}`
+              : ""
+          }
+          ${maxWeight ? `weight <= ${maxWeight}` : ""}
           `;
+      console.log("query", sql);
       const pets = await query(sql);
       return pets;
     } catch (err) {
@@ -98,6 +157,17 @@ class petsService {
       const sql = `UPDATE pets SET owner = ? , adoptionStatus = ? WHERE id = ?`;
       const adoptedPet = await query(sql, [userId, adoptionType, id]);
       return adoptedPet;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  getSavedPets = async (userId) => {
+    try {
+      const sql = `SELECT * FROM saved , pets WHERE saved.petId = pets.id;`;
+      // const sql = "SELECT * FROM saved WHERE userId = ?";
+      const savedPet = await query(sql, [userId]);
+      return savedPet;
     } catch (err) {
       console.log(err);
     }

@@ -51,45 +51,35 @@ class userService {
     bio
   ) => {
     try {
-      const updateId = await new Promise((res, rej) => {
-        const query =
-          `UPDATE users SET ` +
-          `${
-            password
-              ? `password = '${hashPassword}' ${
-                  email || firstName || lastName || phone || bio ? "," : ""
-                }`
-              : ""
-          }` +
-          `${
-            email
-              ? `email = '${email}' ${lastName || phone || bio ? "," : ""}`
-              : ""
-          }` +
-          `${
-            firstName
-              ? `firstName = '${firstName}' ${
-                  lastName || phone || bio ? "," : ""
-                }`
-              : ""
-          }` +
-          `${
-            lastName
-              ? `lastName = '${lastName}' ${phone || bio ? "," : ""}`
-              : ""
-          }` +
-          `${phone ? `phone = '${phone}' ${bio ? "," : ""}` : ""}` +
-          `${bio ? `bio= '${bio}'` : ""}` +
-          `WHERE id = ?`;
-        connection.query(query, [id], (err, result) => {
-          if (err) {
-            console.log(err);
-            rej(new Error(err.message));
-          }
-          res(result);
-        });
-      });
-      return updateId;
+      const sql =
+        `UPDATE users SET ` +
+        `${
+          hashPassword
+            ? `password = '${hashPassword}' ${
+                email || firstName || lastName || phone || bio ? "," : ""
+              }`
+            : ""
+        }` +
+        `${
+          email
+            ? `email = '${email}' ${lastName || phone || bio ? "," : ""}`
+            : ""
+        }` +
+        `${
+          firstName
+            ? `firstName = '${firstName}' ${
+                lastName || phone || bio ? "," : ""
+              }`
+            : ""
+        }` +
+        `${
+          lastName ? `lastName = '${lastName}' ${phone || bio ? "," : ""}` : ""
+        }` +
+        `${phone ? `phone = '${phone}' ${bio ? "," : ""}` : ""}` +
+        `${bio ? `bio= '${bio}'` : ""}` +
+        `WHERE id = ?`;
+      const updatedUser = await query(sql, [id]);
+      return updatedUser;
     } catch (err) {
       console.log(err);
     }

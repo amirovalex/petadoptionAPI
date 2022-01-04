@@ -58,7 +58,7 @@ router.put("/:id", auth, encryptPassword, async (req, res) => {
     const db = userService.getUserServiceInstance();
     const result = await db.updateUser(
       id,
-      password,
+      hashPassword,
       email,
       firstName,
       lastName,

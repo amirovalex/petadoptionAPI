@@ -10,22 +10,24 @@ const { addPetSchema } = require("../../schemas/allSchemas");
 //GET ROUTES
 
 //GET PETS BY CRITERIA FROM DB
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
-    const { type, height, weight, name } = req.query;
+    const { type, minHeight, maxHeight, minWeight, maxWeight, name } =
+      req.query;
     let { adoptionStatus } = req.query;
-    if (adoptionStatus === "null") {
-      adoptionStatus = null;
-    }
+    // if (adoptionStatus === "null") {
+    //   adoptionStatus = null;
+    // }
     const db = petsService.getPetsServiceInstance();
     const result = await db.getPetsByCriteria(
       adoptionStatus,
       type,
-      height,
-      weight,
+      minHeight,
+      maxHeight,
+      minWeight,
+      maxWeight,
       name
     );
-
     res.send(result);
   } catch (err) {
     console.log(err);
@@ -33,7 +35,7 @@ router.get("/", async (req, res) => {
 });
 
 //GET PET BY ID
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   try {
     const { id } = req.params;
     const db = petsService.getPetsServiceInstance();
@@ -45,8 +47,21 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+//GET SAVED PETS BY USER ID
+router.get("/saved/user/:id", auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = petsService.getPetsServiceInstance();
+    const result = await db.getSavedPets(id);
+
+    res.send(result);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 //GET PETS BY USER ID
-router.get("/user/:userId", async (req, res) => {
+router.get("/user/:userId", auth, async (req, res) => {
   try {
     const { userId } = req.params;
     const db = petsService.getPetsServiceInstance();
