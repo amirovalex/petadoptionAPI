@@ -7,7 +7,7 @@ exports.signUpSchema = S.object()
   .prop("password", S.string().minLength(3).required())
   .prop("repassword", S.string().minLength(3).required())
   .prop("admin", S.string())
-  .prop("phone", S.string().required())
+  .prop("phone", S.string())
   .valueOf();
 
 exports.loginSchema = S.object()

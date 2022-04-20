@@ -156,6 +156,7 @@ class petsService {
     try {
       const sql = `UPDATE pets SET owner = ? , adoptionStatus = ? WHERE id = ?`;
       const adoptedPet = await query(sql, [userId, adoptionType, id]);
+      console.log("adopted pet", adoptedPet);
       return adoptedPet;
     } catch (err) {
       console.log(err);
@@ -187,7 +188,7 @@ class petsService {
   unsavePet = async (id) => {
     //need to make transaction to check if saved
     try {
-      const sql = "DELETE FROM saved WHERE id = ?";
+      const sql = "DELETE FROM saved WHERE petId = ?";
       const unsavedPet = await query(sql, [id]);
       return unsavedPet;
     } catch (err) {
@@ -197,7 +198,8 @@ class petsService {
 
   returnPet = async (id) => {
     try {
-      const sql = `UPDATE pets SET owner = NULL , adoptionStatus =  WHERE id = ?`;
+      console.log("ID", id);
+      const sql = `UPDATE pets SET owner = NULL , adoptionStatus = NULL WHERE id = ?`;
       const returnedPet = await query(sql, [id]);
       return returnedPet;
     } catch (err) {
@@ -220,139 +222,130 @@ class petsService {
     breed
   ) => {
     try {
-      const updateId = await new Promise((res, rej) => {
-        const query =
-          `UPDATE pets SET ` +
-          `${
-            type
-              ? `type = '${type}' ${
-                  name ||
-                  adoptionStatus ||
-                  picture ||
-                  weight ||
-                  height ||
-                  color ||
-                  bio ||
-                  hypoallergenic ||
-                  dietaryRestrictions ||
-                  breed
-                    ? ","
-                    : ""
-                }`
-              : ""
-          }` +
-          `${
-            name
-              ? `name = '${name}' ${
-                  adoptionStatus ||
-                  picture ||
-                  weight ||
-                  height ||
-                  color ||
-                  bio ||
-                  hypoallergenic ||
-                  dietaryRestrictions ||
-                  breed
-                    ? ","
-                    : ""
-                }`
-              : ""
-          }` +
-          `${
-            adoptionStatus
-              ? `adoptionStatus = '${adoptionStatus}' ${
-                  picture ||
-                  weight ||
-                  height ||
-                  color ||
-                  bio ||
-                  hypoallergenic ||
-                  dietaryRestrictions ||
-                  breed
-                    ? ","
-                    : ""
-                }`
-              : ""
-          }` +
-          `${
-            picture
-              ? `picture = '${picture}' ${
-                  weight ||
-                  height ||
-                  color ||
-                  bio ||
-                  hypoallergenic ||
-                  dietaryRestrictions ||
-                  breed
-                    ? ","
-                    : ""
-                }`
-              : ""
-          }` +
-          `${
-            weight
-              ? `weight = ${weight} ${
-                  height ||
-                  color ||
-                  bio ||
-                  hypoallergenic ||
-                  dietaryRestrictions ||
-                  breed
-                    ? ","
-                    : ""
-                }`
-              : ""
-          }` +
-          `${
-            height
-              ? `height= ${height} ${
-                  color || bio || hypoallergenic || dietaryRestrictions || breed
-                    ? ","
-                    : ""
-                }`
-              : ""
-          }` +
-          `${
-            color
-              ? `color= '${color}' ${
-                  bio || hypoallergenic || dietaryRestrictions || breed
-                    ? ","
-                    : ""
-                }`
-              : ""
-          }` +
-          `${
-            bio
-              ? `bio= '${bio}' ${
-                  hypoallergenic || dietaryRestrictions || breed ? "," : ""
-                }`
-              : ""
-          }` +
-          //need to send string
-          `${
-            hypoallergenic
-              ? `hypoallergenic= ${hypoallergenic} ${
-                  dietaryRestrictions || breed ? "," : ""
-                }`
-              : ""
-          }` +
-          `${
-            dietaryRestrictions
-              ? `dietaryRestrictions= '${dietaryRestrictions}' ${
-                  breed ? "," : ""
-                }`
-              : ""
-          }` +
-          `${breed ? `dietaryRestrictions= '${dietaryRestrictions}'` : ""}` +
-          `WHERE id = ?`;
-        connection.query(query, [id], (err, result) => {
-          if (err) {
-            console.log(err);
-            rej(new Error(err.message));
-          }
-          res(result);
-        });
-      });
+      // const updateId = await new Promise((res, rej) => {
+      const sql =
+        `UPDATE pets SET ` +
+        `${
+          type
+            ? `type = '${type}' ${
+                name ||
+                adoptionStatus ||
+                picture ||
+                weight ||
+                height ||
+                color ||
+                bio ||
+                hypoallergenic ||
+                dietaryRestrictions ||
+                breed
+                  ? ","
+                  : ""
+              }`
+            : ""
+        }` +
+        `${
+          name
+            ? `name = '${name}' ${
+                adoptionStatus ||
+                picture ||
+                weight ||
+                height ||
+                color ||
+                bio ||
+                hypoallergenic ||
+                dietaryRestrictions ||
+                breed
+                  ? ","
+                  : ""
+              }`
+            : ""
+        }` +
+        `${
+          adoptionStatus
+            ? `adoptionStatus = '${adoptionStatus}' ${
+                picture ||
+                weight ||
+                height ||
+                color ||
+                bio ||
+                hypoallergenic ||
+                dietaryRestrictions ||
+                breed
+                  ? ","
+                  : ""
+              }`
+            : ""
+        }` +
+        `${
+          picture
+            ? `picture = '${picture}' ${
+                weight ||
+                height ||
+                color ||
+                bio ||
+                hypoallergenic ||
+                dietaryRestrictions ||
+                breed
+                  ? ","
+                  : ""
+              }`
+            : ""
+        }` +
+        `${
+          weight
+            ? `weight = ${weight} ${
+                height ||
+                color ||
+                bio ||
+                hypoallergenic ||
+                dietaryRestrictions ||
+                breed
+                  ? ","
+                  : ""
+              }`
+            : ""
+        }` +
+        `${
+          height
+            ? `height= ${height} ${
+                color || bio || hypoallergenic || dietaryRestrictions || breed
+                  ? ","
+                  : ""
+              }`
+            : ""
+        }` +
+        `${
+          color
+            ? `color= '${color}' ${
+                bio || hypoallergenic || dietaryRestrictions || breed ? "," : ""
+              }`
+            : ""
+        }` +
+        `${
+          bio
+            ? `bio= '${bio}' ${
+                hypoallergenic || dietaryRestrictions || breed ? "," : ""
+              }`
+            : ""
+        }` +
+        //need to send string
+        `${
+          hypoallergenic
+            ? `hypoallergenic= ${hypoallergenic} ${
+                dietaryRestrictions || breed ? "," : ""
+              }`
+            : ""
+        }` +
+        `${
+          dietaryRestrictions
+            ? `dietaryRestrictions= '${dietaryRestrictions}' ${
+                breed ? "," : ""
+              }`
+            : ""
+        }` +
+        `${breed ? `dietaryRestrictions= '${dietaryRestrictions}'` : ""}` +
+        `WHERE id = ?`;
+      const updateId = await query(sql, [id]);
       return updateId;
     } catch (err) {
       console.log(err);

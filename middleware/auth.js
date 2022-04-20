@@ -6,6 +6,7 @@ const verifyToken = (req, res, next) => {
   try {
     const authHeaders = req.headers.authorization;
     const token = authHeaders.replace("Bearer ", "");
+    console.log("token", token);
     if (!token) {
       return res.status(401).send("A token is required for authentication");
     }

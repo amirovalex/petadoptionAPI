@@ -214,11 +214,12 @@ router.put("/:id", auth, isUserAdmin, async (req, res) => {
 //DELETE ROUTES
 
 //DELETE SAVED PET
-router.delete("/:id/save", auth, async (req, res) => {
+router.put("/:id/save", auth, async (req, res) => {
   try {
+    console.log("request body", req.body);
     const { id } = req.params;
     const { userId } = req.body;
-
+    console.log("petId:", typeof id, "user id:", userId);
     //protected to logged in users
     if (userId) {
       const db = petsService.getPetsServiceInstance();
