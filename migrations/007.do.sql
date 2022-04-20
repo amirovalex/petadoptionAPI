@@ -1,2 +1,2 @@
-ALTER TABLE users MODIFY COLUMN
-phone varchar(45) DEFAULT NULL;
+-- ALTER TABLE users MODIFY COLUMN
+-- phone varchar(45) DEFAULT NULL;

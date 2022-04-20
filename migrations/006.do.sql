@@ -1,2 +1,2 @@
-ALTER TABLE pets MODIFY COLUMN
-picture TEXT;
+-- ALTER TABLE pets MODIFY COLUMN
+-- picture TEXT;

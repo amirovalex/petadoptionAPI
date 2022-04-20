@@ -9,7 +9,7 @@ const { postgrator } = require("./lib/db");
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 7070;
 //Middleware
 app.use(cors());
 app.use(express.json());
@@ -18,14 +18,20 @@ app.use("/user", userRoutes);
 
 //Run application
 
-postgrator
-  .migrate()
-  .then((result) => {
-    console.log(`migrated db successfully:`, result);
+// postgrator
+//   .migrate()
+//   .then((result) => {
+//     console.log(`migrated db successfully:`, result);
+const run = async () => {
+  try {
     app.listen(process.env.PORT, () => {
       console.log(
         `server is listening at http://localhost:${process.env.PORT}`
       );
     });
-  })
-  .catch((error) => console.error(error));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+run();
