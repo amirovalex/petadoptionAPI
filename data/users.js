@@ -91,6 +91,7 @@ class userService {
       const user = await query(sql);
       const dbPass = user[0].password;
       const isPasswordValid = await bcrypt.compare(password, dbPass);
+      console.log("user inside data login", user);
       if (isPasswordValid) return user;
       return "password not valid";
     } catch (err) {

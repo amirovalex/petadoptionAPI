@@ -128,6 +128,7 @@ router.post(
       const { email, password } = req.body;
       const db = userService.getUserServiceInstance();
       const result = await db.loginUser(email, password);
+      console.log("THEEEE RESULT", result);
       const user = {
         id: result[0].id,
         email: result[0].email,
@@ -137,6 +138,7 @@ router.post(
         bio: result[0].bio,
         admin: result[0].admin,
       };
+      console.log("user", user);
       const token = jwt.sign({ id: user.id }, process.env.USER_TOKEN, {
         expiresIn: "2h",
       });

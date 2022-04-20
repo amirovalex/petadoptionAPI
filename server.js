@@ -11,7 +11,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 7070;
 //Middleware
-app.use(cors());
+app.use(cors({ origin: "https://amirovalex.github.io/petadoption/" }));
 app.use(express.json());
 app.use("/pet", petRoutes);
 app.use("/user", userRoutes);
@@ -24,10 +24,8 @@ app.use("/user", userRoutes);
 //     console.log(`migrated db successfully:`, result);
 const run = async () => {
   try {
-    app.listen(process.env.PORT, () => {
-      console.log(
-        `server is listening at http://localhost:${process.env.PORT}`
-      );
+    app.listen(port, () => {
+      console.log(`server is listening at http://localhost:${port}`);
     });
   } catch (error) {
     console.error(error);
